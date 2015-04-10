@@ -26,7 +26,7 @@ SDK_BASE	?= ../esp-open-sdk/sdk
 ESPTOOL		?= ../esptool-ck-master/esptool-mac
 FW_TOOL		?= /usr/bin/esptool
 #ESPPORT		?= /dev/ttyUSB0
-ESPPORT		?= /dev/tty.usbserial-A8004Z7l
+ESPPORT		?= /dev/tty.usbserial
 #ESPDELAY indicates seconds to wait between flashing the two binary images
 ESPDELAY	?= 1
 #ESPBAUD		?= 460800
