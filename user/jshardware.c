@@ -60,12 +60,15 @@ void jshInit() {
 }
 
 void jshReset() {
+	// TODO
 }
 
 void jshKill() {
+	// TODO
 }
 
 void jshIdle() {
+	// TODO
 //	jsiConsolePrintf("jshIdle");
 //   while (Serial.available() > 0) {
 //      jshPushIOCharEvent(EV_SERIAL1, Serial.read());
@@ -83,9 +86,11 @@ int jshGetSerialNumber(unsigned char *data, int maxChars) {
 // ----------------------------------------------------------------------------
 
 void jshInterruptOff() {
+	// TODO
 }
 
 void jshInterruptOn() {
+	// TODO
 }
 
 void jshDelayMicroseconds(int microsec) {
@@ -212,7 +217,7 @@ JsSysTime jshGetSystemTime() { // in us
 	time = t;
 	
   JsSysTime time = (JsSysTime)(t + sysTimeBase);
-	jsiConsolePrintf("systemTime: %d, %d\n", (int)time, (int)t);
+//	jsiConsolePrintf("systemTime: %d, %d\n", (int)time, (int)t);
 
 	return time;
 }
@@ -224,18 +229,18 @@ void jshSetSystemTime(JsSysTime time) {
 // ----------------------------------------------------------------------------
 
 JsVarFloat jshPinAnalog(Pin pin) {
-	jsiConsolePrintf("jshPinAnalog: %d\n", pin);
+//	jsiConsolePrintf("jshPinAnalog: %d\n", pin);
   return (JsVarFloat)system_adc_read();
 }
 
 int jshPinAnalogFast(Pin pin) {
-	jsiConsolePrintf("jshPinAnalogFast: %d\n", pin);
+//	jsiConsolePrintf("jshPinAnalogFast: %d\n", pin);
 	return NAN;
 }
 
 JshPinFunction jshPinAnalogOutput(Pin pin, JsVarFloat value, JsVarFloat freq) { // if freq<=0, the default is used
-	jsiConsolePrintf("jshPinAnalogFast: %d\n", pin);
-  pwm_set(pin, value);
+//	jsiConsolePrintf("jshPinAnalogOutput: %d, %d, %d\n", pin, (int)value, (int)freq);
+  pwm_set(pin, value < 0.0f ? 0 : 255.0f < value ? 255 : (uint8_t)value);
   return 0;
 }
 
@@ -324,7 +329,6 @@ void jshI2CWrite(IOEventFlags device, unsigned char address, int nBytes, const u
 
 void jshI2CRead(IOEventFlags device, unsigned char address, int nBytes, unsigned char *data, bool sendStop) {
 }
-
 
 void jshSaveToFlash() {
   jsiConsolePrintf("jshSaveToFlash\n");

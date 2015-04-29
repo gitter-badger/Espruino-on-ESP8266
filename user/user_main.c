@@ -13,11 +13,11 @@
 #include "jsvar.h"
 #include "jswrap_functions.h"
 #include "spi_flash.h"
-#include "jswrap_math.h"
-#include "pwm.h"
+
+#define FS_ADDRESS 0x60000
 
 // error handler for pure virtual calls
-void __cxa_pure_virtual() { while (1); }
+//void __cxa_pure_virtual() { while (1); }
 
 void jsInit(bool autoLoad) {
 	jshInit();
@@ -31,8 +31,40 @@ void jsKill() {
 	jshKill();
 }
 
+/*
+ void vApplicationMallocFailedHook( void );
+ void *pvPortMalloc( size_t xWantedSize );
+ void vPortFree( void *pv );
+ size_t xPortGetFreeHeapSize( void );
+ void vPortInitialiseBlocks( void );
+*/
+/*void *alloca(size_t s) {
+	void *p = os_malloc(s);
+	os_printf("alloca %p, %d\n", p, s);
+	return p;
+}*/
+
 #define malloc os_malloc
 #define free os_free
+//#define realloc os_realloc
+/*void *malloc(size_t s) {
+	void *p = os_malloc(s);
+	os_printf("malloc %p, %d\n", p, s);
+	return p;
+}
+void free(void *p) {
+	os_printf("free %p, %d\n", p, sizeof(p));
+	os_free(p);
+}
+void *os_realloc(void *old, size_t size) {
+	size_t s = sizeof(old);
+	if (size <= s) return old;
+	void *new = os_malloc(size);
+	//os_printf("realloc %p, %d, %p, %d\n", old, s, new, size);
+	memcpy(new, old, s < size ? s : size);
+	os_free(old);
+	return new;
+}*/
 
 const char *ICACHE_RAM_ATTR jsVarToString(JsVar *jsVar) {
 	if (!jsVar) return "undefined";
@@ -54,10 +86,9 @@ const char *ICACHE_RAM_ATTR jsVarToString(JsVar *jsVar) {
 extern UartDevice UartDev;
 
 void writeToFlash(JsVar *jsCode) {
-	if (!jsCode) return;
 	const char *code = jsVarToString(jsCode);
 	int error;
-	int addr = 0x60000;
+	int addr = FS_ADDRESS;
 	int sector = addr/SPI_FLASH_SEC_SIZE;
 	int to = addr + strlen(code)+1;
 	while (addr < to) {
@@ -71,109 +102,93 @@ void writeToFlash(JsVar *jsCode) {
 	}
 }
 
-void printTime(JsSysTime time) {
-	JsVarFloat ms = jshGetMillisecondsFromTime(time);
-	jsiConsolePrintf("time: %d, %f, %d\n", (int)time, ms, (int)jshGetTimeFromMilliseconds(ms));
-}
-void printMilliseconds(JsVarFloat ms) {
-	JsSysTime time = jshGetTimeFromMilliseconds(ms);
-	jsiConsolePrintf("ms: %f, %d, %f\n", ms, (int)time, jshGetMillisecondsFromTime(time));
-}
-
-void test() {
-	JsSysTime time = 1;
-	for (int n = 0; n < 15; n++) {
-		printTime(time);
-		printTime(time/10);
-		time *= 10;
-	}
-	JsVarFloat ms = 1.0;
-	for (int n = 0; n < 15; n++) {
-		printMilliseconds(ms);
-		printMilliseconds(ms/10.0);
-		ms *= 10.0;
-	}
-}
-
 #include "jswrapper.h"
 void addNativeFunction(const char *name, void (*callbackPtr)(void)) {
 	jsvUnLock(jsvObjectSetChild(execInfo.root, name, jsvNewNativeFunction(callbackPtr, JSWAT_VOID)));
 }
 
+static JsVar *jsUserCode = 0;
 void nativeSave() {
+	if (!jsUserCode) return;
 	jsiConsolePrintf("nativeSave\n");
+	writeToFlash(jsUserCode);
+//	jsvUnLock(jsUserCode);
+//	jsUserCode = 0;
 }
 
 void ICACHE_RAM_ATTR user_init(void) {
+//	return;
+//	ets_delay_us(1000);
+
 	uart_init(BIT_RATE_115200, 0);
+//	os_printf("Heap size: %d\n", system_get_free_heap_size());
 	
-	jshPinSetState(2, JSHPINSTATE_GPIO_OUT);
-	jshPinSetState(12, JSHPINSTATE_GPIO_OUT);
-	jshPinSetState(13, JSHPINSTATE_GPIO_OUT);
-	jshPinSetState(15, JSHPINSTATE_GPIO_OUT);
+//	ets_delay_us(1000);
+	
+	jsInit(true);
+	addNativeFunction("save", nativeSave);
+//	addNativeFunction("discard", nativeDiscard);
 
-	jshPinSetValue(2, false);
-	jshPinSetValue(12, false);
-	jshPinSetValue(13, false);
-	jshPinSetValue(15, false);
-	
-	TM1_EDGE_INT_ENABLE();
-	ETS_FRC1_INTR_ENABLE();
-	int c = 0;
-	uint8_t r = 0, g = 0, b = 0;
-	
-	while (true) {
-		int phase = c/PWM_DEPTH;
-		int value = c - phase * PWM_DEPTH;
-		switch (phase) {
-			case 0: // 1 R 0
-				r = PWM_DEPTH;
-				g = value;
-				b = 0;
-				break;
-			case 1: // F 1 0
-				r = PWM_DEPTH - value;
-				g = PWM_DEPTH;
-				b = 0;
-				break;
-			case 2: // 0 1 R
-				r = 0;
-				g = PWM_DEPTH;
-				b = value;
-				break;
-			case 3: // 0 F 1
-				r = 0;
-				g = PWM_DEPTH - value;
-				b = PWM_DEPTH;
-				break;
-			case 4: // R 0 1
-				r = value;
-				g = 0;
-				b = PWM_DEPTH;
-				break;
-			case 5: // 1 0 F
-				r = PWM_DEPTH;
-				g = 0;
-				b = PWM_DEPTH - value;
-				break;
+	//testFunctionCall();
+	system_print_meminfo();
+
+	jsiConsolePrintf("\nReady\n");
+//	os_printf("Heap size: %d\n", system_get_free_heap_size());
+
+	//runTimer();
+
+	JsVar *jsCode = 0;
+	jsiConsolePrintf("\nRead from flash:\n");
+	char c;
+	int error;
+	int addr;
+	for (addr = FS_ADDRESS;; addr++) {
+		if (SPI_FLASH_RESULT_OK != (error = spi_flash_read(addr, (uint32 *)&c, 1))) {
+			jsiConsolePrintf("\nerror %d\n", error);
+			jsvUnLock(jsCode);
+			jsCode = 0;
+			break;
 		}
-
-		g /= 2; // green is 2x stronger than 2 other colors
-		uint16_t r16 = (uint16_t)(r) * 2;
-		if (r16 > PWM_DEPTH) r = PWM_DEPTH;
-		else r = (uint8_t)r16;
-		
-		int p = c/128;
-		int v = c - p * 128;
-		p = p % 2;
-		if (p) v = 128-v;
-		float f = 1.0f - v / 128.0f;
-		pwm_set(15, r * f);
-		pwm_set(12, g * f);
-		pwm_set(13, b * f);
-		
-		jshDelayMicroseconds(5000);
-		if (++c == 6 * PWM_DEPTH) c = 0;
+		if (0x80 & c || 0 == c) break; // allow ascii only
+		os_printf("%c", c);
+		if (!jsCode) jsCode = jsvNewFromEmptyString();
+		os_printf("%c", c);
+		jsvAppendStringBuf(jsCode, &c, 1);
+		os_printf("%c", c);
+		uart0_putc(c);
 	}
+	if (jsCode) {
+		JsVar *jsResult = jspEvaluateVar(jsCode, 0, true);
+		jsvUnLock(jsCode); jsCode = 0;
+		if (jsResult) {
+			jsiConsolePrintf("%v\n", jsResult);
+			jsvUnLock(jsResult);
+		}
+	}
+//	os_printf("Heap size: %d\n", system_get_free_heap_size());
 
+	bool cr = false;
+	while (true) {
+		while ((c = uart_getc())) {
+			uart0_putc(c);
+			if (cr && '\n' == c) {
+				if (jsCode) {
+//					writeToFlash(jsCode);
+					JsVar *jsResult = jspEvaluateVar(jsCode, 0, true);
+					jsvUnLock(jsCode); jsCode = 0;
+					jsiConsolePrintf("%v\n", jsResult);
+					jsvUnLock(jsResult);
+				}
+			} else if (0 < c && !(cr = '\r' == c)) {
+				if (!jsCode) jsCode = jsvNewFromEmptyString();
+				jsvAppendStringBuf(jsCode, &c, 1);
+				if (!jsUserCode) jsUserCode = jsvLockAgain(jsCode);
+				if (jsUserCode != jsCode) jsvAppendStringBuf(jsUserCode, &c, 1);
+			}
+		}
+//		os_printf("Heap size: %d\n", system_get_free_heap_size());
+		jsiLoop();
+	}
+	jsKill();
 }
+

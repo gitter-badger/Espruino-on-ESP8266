@@ -133,9 +133,7 @@ $(FW_FILE_2): $(TARGET_OUT) firmware
 
 $(TARGET_OUT): $(APP_AR)
 	$(vecho) "LD $@"
-#	$(vecho) $(Q) $(LD) -L$(SDK_LIBDIR) $(LD_SCRIPT) $(LDFLAGS) -Wl,--start-group $(LIBS) $(APP_AR) -Wl,--end-group -o $@
 	$(Q) $(LD) -L$(SDK_LIBDIR) $(LD_SCRIPT) $(LDFLAGS) -Wl,--start-group $(LIBS) $(APP_AR) -Wl,--end-group -o $@
-#	$(Q) $(OD) -h build/user/jsvar.o build/user/user_main.o $@
 	$(Q) $(OD) -h $@
 
 $(APP_AR): $(OBJ)
@@ -151,10 +149,9 @@ firmware:
 	$(Q) mkdir -p $@
 
 flash: $(FW_FILE_1) $(FW_FILE_2)
-#	$(Q) $(ESPTOOL) -cp $(ESPPORT) -cb $(ESPBAUD) -ca 0x00000 -cf firmware/0x00000.bin -v
 	$(Q) [ $(ESPDELAY) -ne 0 ] && echo "Please put the ESP in bootloader mode..." || true
 	$(Q) sleep $(ESPDELAY) || true
-	$(Q) $(XTENSA_TOOLS_ROOT)esptool.py --port $(ESPPORT) write_flash 0x00000 firmware/0x00000.bin 0x10000 firmware/0x10000.bin
+	$(Q) $(XTENSA_TOOLS_ROOT)esptool.py --port $(ESPPORT) write_flash 0x00000 $(FW_FILE_1) 0x10000 $(FW_FILE_2)
 
 js: $(JS_FILE)
 	$(Q) [ $(ESPDELAY) -ne 0 ] && echo "Please put the ESP in bootloader mode..." || true

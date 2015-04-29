@@ -95,7 +95,7 @@ JsVar *jsnCallFunction(void *function, JsnArgumentType argumentSpecifier, JsVar 
         argData[argCount++] = (size_t)((i>>32) & 0xFFFFFFFF);
 #endif
 #else
-		  jsiConsolePrintf("doubleData, %d, %d\n", doubleCount, (int)f);
+//		  jsiConsolePrintf("doubleData, %d, %d\n", doubleCount, (int)f);
         doubleData[doubleCount++] = f;
 #endif
         break;
@@ -121,7 +121,7 @@ JsVar *jsnCallFunction(void *function, JsnArgumentType argumentSpecifier, JsVar 
         result = *(uint64_t*)&f;
       } else {
 		  // HERE
-		  jsiConsolePrintf("callFunction: %d, %d, %d\n", JSWAT_IS_64BIT(returnType), function == jswrap_interface_setInterval, (int)doubleData[0]);
+//		  jsiConsolePrintf("callFunction: %d, %d, %d\n", JSWAT_IS_64BIT(returnType), function == jswrap_interface_setInterval, (int)doubleData[0]);
 //		  if (function == jswrap_interface_setInterval) {
 //			  result = (uint32_t)jswrap_interface_setInterval((JsVar *)argData[0], doubleData[0]);
 //		  }
