@@ -31,11 +31,17 @@ esptool.py --port /dev/ttyUSB0 write_flash 0x60000 ./js/main.js
 
 # Example JavaScript:
 var gpio2 = new Pin(2);
+
 gpio2.write(!gpio2.read()); // toggle LED GPIO2
 
+
 setInterval(function() {
+
   var value = analogRead(); // read from photo sensor
+
   analogWrite(2, value); // output analog value to LED
+
 }, 50);
+
 
 save(); // write the code above to flash
