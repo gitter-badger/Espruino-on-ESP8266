@@ -150,11 +150,8 @@ void ICACHE_RAM_ATTR user_init(void) {
 			break;
 		}
 		if (0x80 & c || 0 == c) break; // allow ascii only
-		os_printf("%c", c);
 		if (!jsCode) jsCode = jsvNewFromEmptyString();
-		os_printf("%c", c);
 		jsvAppendStringBuf(jsCode, &c, 1);
-		os_printf("%c", c);
 		uart0_putc(c);
 	}
 	if (jsCode) {

@@ -1,12 +1,14 @@
-digitalWrite(15, 0);
-digitalWrite(12, 0);
-digitalWrite(13, 0);
+
+var v = 0, d = 0;
+
 digitalWrite(2, 0);
 
 setInterval(function() {
-	var v = 100 - analogRead();
-	v = (v - 20.0) * 1.2;
+	if (0 == v) d = 1;
+	else if (255 <= v) d = -1;
+	v += d;
 	analogWrite(2, v);
+	console.log(v);
 }, 10);
 
-save();
+save(); // write the code above to flash

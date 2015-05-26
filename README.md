@@ -11,7 +11,7 @@ All the code changes for now are "dirty", source files and headers are all in /u
 
 # To Do List:
 There are few functionalities that need to be implemented as native javascript functions/objects before we can merge the code to Espruino:
-- Incorporate a flash file system. We need to choose most suitable one, perhaps https://github.com/pellepl/spiffs
+- Incorporate a flash file system. We need to choose most suitable one (http://elm-chan.org/fsw/ff/00index_e.html or github.com/pellepl/spiffs)
 - Socket + HTTP Web Server
 - FTP protocol for easy web scripts uploading (html, css, js - client/server side)
 - Web Socket as upgrade of HTTP protocol
