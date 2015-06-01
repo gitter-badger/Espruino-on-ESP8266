@@ -90,7 +90,18 @@ bool jswrap_wlan_connect(JsVar *wlanObj, JsVar *vAP, JsVar *vKey, JsVar *callbac
 	jsiConsolePrintf("3");
 	bool ret = wifi_station_set_config(&config) && wifi_station_connect();
 	JsVar *data = jsvNewFromString(ret ? "OK" :"FAIL");
-	jsiQueueObjectCallbacks(wlanObj, WLAN_ON_STATE_CHANGE, &data, 1);
+	
+	jsiConsolePrintf("4");
+	if (callback && !jsiExecuteEventCallback(callback, data, 0)) {
+		jsError("Error processing connect callback.");
+		jsErrorFlags |= JSERR_CALLBACK;
+	}
+
+	jsiConsolePrintf("5");
+	jsvUnLock(callback);
+	jsvUnLock(data);
+	
+//	jsiQueueObjectCallbacks(wlanObj, WLAN_ON_STATE_CHANGE, &data, 1);
 	return ret;
 }
 
@@ -134,8 +145,6 @@ void on_wlan_scan_done(void *arg, STATUS status) {
 	JsVar *wlanObj = jsvObjectGetChild(execInfo.hiddenRoot, WLAN_OBJ_NAME, 0);
 	JsVar *data = jsvNewFromString("OK");
 	jsiQueueObjectCallbacks(wlanObj, WLAN_ON_SCAN, &data, 1);
-//	jsvUnLock(wifi_scan_callback);
-//	wifi_scan_callback = 0;
 }
 
 bool jswrap_wlan_scan(JsVar *wlanObj, JsVar *config, JsVar *callback) {
