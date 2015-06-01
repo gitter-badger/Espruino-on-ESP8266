@@ -13,6 +13,13 @@
  */
 #include "jsvar.h"
 
-bool jswrap_wifi_scan(JsVar *config, JsVar *callback);
-bool jswrap_wifi_connect(JsVar *vSSID, JsVar *vPassword); //, JsVar *callback
-bool jswrap_wifi_disconnect();
+bool jswrap_wlan_scan(JsVar *wlanObj, JsVar *config, JsVar *callback);
+//JsVar *jswrap_socket_connect(JsVar *spi, Pin cs, Pin en, Pin irq);
+bool jswrap_wlan_connect(JsVar *wlanObj, JsVar *vAP, JsVar *vKey, JsVar *callback);
+void jswrap_wlan_disconnect(JsVar *wlanObj);
+void jswrap_wlan_reconnect(JsVar *wlanObj);
+//JsVar *jswrap_wlan_getIP(JsVar *wlanObj);
+//bool jswrap_wlan_setIP(JsVar *wlanObj, JsVar *options);
+
+/// Check if the socket has disconnected (clears flag as soon as is called)
+//bool socket_socket_has_closed(int socketNum);

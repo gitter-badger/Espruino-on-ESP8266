@@ -24,7 +24,7 @@
 #include "jswrap_string.h"
 #include "jswrap_waveform.h"
 #include "jswrap_math.h"
-#include "jswrap_wifi.h"
+#include "jswrap_wlan.h"
 
 // -----------------------------------------------------------------------------------------
 // ----------------------------------------------------------------- AUTO-GENERATED WRAPPERS
@@ -248,7 +248,7 @@ static JsVar* gen_jswrap_I2C_I2C() {
 static JsVar* gen_jswrap_Math_Math() {
   return jsvNewWithFlags(JSV_OBJECT);
 }
-static JsVar* gen_jswrap_wifi_wifi() {
+static JsVar* gen_jswrap_wlan_wlan() {
   return jsvNewWithFlags(JSV_OBJECT);
 }
 // -----------------------------------------------------------------------------------------
@@ -444,7 +444,7 @@ static const JswSymPtr jswSymbols_global[] = {
   {716, (void (*)(void))jswrap_interface_setTimeout, JSWAT_JSVAR | (JSWAT_JSVAR << (JSWAT_BITS*1)) | (JSWAT_JSVARFLOAT << (JSWAT_BITS*2))},
   {727, (void (*)(void))jswrap_interface_setWatch, JSWAT_JSVAR | (JSWAT_JSVAR << (JSWAT_BITS*1)) | (JSWAT_PIN << (JSWAT_BITS*2)) | (JSWAT_JSVAR << (JSWAT_BITS*3))},
   {736, (void (*)(void))jswrap_interface_trace, JSWAT_VOID | (JSWAT_JSVAR << (JSWAT_BITS*1))},
-  {742, (void (*)(void))gen_jswrap_wifi_wifi, JSWAT_JSVAR}
+  {742, (void (*)(void))gen_jswrap_wlan_wlan, JSWAT_JSVAR}
 };
 static const unsigned char jswSymbolIndex_global = 7;
 static const JswSymPtr jswSymbols_Modules[] = {
@@ -641,12 +641,14 @@ static const JswSymPtr jswSymbols_process[] = {
   {11, (void (*)(void))gen_jswrap_process_version, JSWAT_JSVAR | JSWAT_EXECUTE_IMMEDIATELY}
 };
 static const unsigned char jswSymbolIndex_process = 29;
-static const JswSymPtr jswSymbols_wifi[] = {
-  {0, (void (*)(void))jswrap_wifi_connect, JSWAT_BOOL | (JSWAT_JSVAR << (JSWAT_BITS*1)) | (JSWAT_JSVAR << (JSWAT_BITS*2))},
-  {8, (void (*)(void))jswrap_wifi_scan, JSWAT_VOID | (JSWAT_JSVAR << (JSWAT_BITS*1)) | (JSWAT_JSVAR << (JSWAT_BITS*2))}
+static const JswSymPtr jswSymbols_wlan[] = {
+  {0, (void (*)(void))jswrap_wlan_connect, JSWAT_BOOL | (JSWAT_JSVAR << (JSWAT_BITS*1)) | (JSWAT_JSVAR << (JSWAT_BITS*2))| (JSWAT_JSVAR << (JSWAT_BITS*3))},
+  {8, (void (*)(void))jswrap_wlan_disconnect, JSWAT_VOID},
+  {19, (void (*)(void))jswrap_wlan_reconnect, JSWAT_VOID},
+  {29, (void (*)(void))jswrap_wlan_scan, JSWAT_BOOL | (JSWAT_JSVAR << (JSWAT_BITS*1)) | (JSWAT_JSVAR << (JSWAT_BITS*2))}
 };
 
-static const unsigned char jswSymbolIndex_wifi = 30;
+static const unsigned char jswSymbolIndex_wlan = 30;
 /*static const JswSymPtr jswSymbols_arguments[] = {
 	{0, (void (*)(void))jswrap_arguments_callee, JSWAT_JSVAR | JSWAT_THIS_ARG | JSWAT_EXECUTE_IMMEDIATELY}
 };
@@ -687,7 +689,7 @@ const JswSymList jswSymbolTables[] = {
   {jswSymbols_console, 1, "log\0"},
   {jswSymbols_Array_proto, 20, "concat\0every\0fill\0filter\0forEach\0indexOf\0join\0length\0map\0pop\0push\0reduce\0reverse\0shift\0slice\0some\0sort\0splice\0toString\0unshift\0"},
   {jswSymbols_process, 3, "env\0memory\0version\0"},
-  {jswSymbols_wifi, 2, "connect\0scan\0"},
+  {jswSymbols_wlan, 4, "connect\0disconnect\0reconnect\0scan\0"},
 //  {jswSymbols_arguments, 3, "callee\0"},
 //30
 };
@@ -739,8 +741,8 @@ JsVar *jswFindBuiltInFunction(JsVar *parent, const char *name) {
       } else if ((void *)parent->varData.native.ptr==(void *)gen_jswrap_process_process) {
         v = jswBinarySearch(&jswSymbolTables[jswSymbolIndex_process], parent, name);
         if (v) return v;
-	  } else if ((void *)parent->varData.native.ptr==(void *)gen_jswrap_wifi_wifi) {
-		v = jswBinarySearch(&jswSymbolTables[jswSymbolIndex_wifi], parent, name);
+	  } else if ((void *)parent->varData.native.ptr==(void *)gen_jswrap_wlan_wlan) {
+		v = jswBinarySearch(&jswSymbolTables[jswSymbolIndex_wlan], parent, name);
 		if (v) return v;
       }
     }
@@ -850,7 +852,7 @@ const JswSymList *jswGetSymbolListForObject(JsVar *parent) {
 
   if (jsvIsNativeFunction(parent) && (void *)parent->varData.native.ptr==(void *)gen_jswrap_process_process) return &jswSymbolTables[jswSymbolIndex_process];
 
-  if (jsvIsNativeFunction(parent) && (void *)parent->varData.native.ptr==(void *)gen_jswrap_wifi_wifi) return &jswSymbolTables[jswSymbolIndex_wifi];
+  if (jsvIsNativeFunction(parent) && (void *)parent->varData.native.ptr==(void *)gen_jswrap_wlan_wlan) return &jswSymbolTables[jswSymbolIndex_wlan];
 	
   return 0;
 }

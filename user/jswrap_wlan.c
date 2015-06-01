@@ -1,8 +1,6 @@
 /*
  * This file is part of Espruino, a JavaScript interpreter for Microcontrollers
  *
- * Copyright (C) 2013 Gordon Williams <gw@pur3.co.uk>
- *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -14,7 +12,7 @@
  * ----------------------------------------------------------------------------
  */
 
-#include "jswrap_wifi.h"
+#include "jswrap_wlan.h"
 #include "jshardware.h"
 #include "jsinteractive.h"
 
@@ -81,8 +79,8 @@ bool jswrap_wlan_connect(JsVar *wlanObj, JsVar *vAP, JsVar *vKey, JsVar *callbac
 	
 	jsiConsolePrintf("1");
 	struct station_config config;
-	jsvGetString(ssid, config.ssid, sizeof(config.ssid));
-	jsvGetString(password, config.password, sizeof(config.password));
+	jsvGetString(vAP, config.ssid, sizeof(config.ssid));
+	jsvGetString(vKey, config.password, sizeof(config.password));
 	config.bssid_set = 0;
 	
 	jsiConsolePrintf("2");
@@ -92,31 +90,30 @@ bool jswrap_wlan_connect(JsVar *wlanObj, JsVar *vAP, JsVar *vKey, JsVar *callbac
 	jsiConsolePrintf("3");
 	bool ret = wifi_station_set_config(&config) && wifi_station_connect();
 	JsVar *data = jsvNewFromString(ret ? "OK" :"FAIL");
-	jsiQueueObjectCallbacks(wifi, WLAN_ON_STATE_CHANGE, &data, 1);
+	jsiQueueObjectCallbacks(wlanObj, WLAN_ON_STATE_CHANGE, &data, 1);
 	return ret;
 }
 
 //bool wifi_station_disconnect();
-bool jswrap_wlan_disconnect(JsVar *wlanObj) {
-  return wifi_station_disconnect();
+void jswrap_wlan_disconnect(JsVar *wlanObj) {
+	wifi_station_disconnect();
 }
 
-bool jswrap_wlan_reconnect(JsVar *wlanObj) {
+void jswrap_wlan_reconnect(JsVar *wlanObj) {
   JsVar *ap = jsvObjectGetChild(wlanObj, JS_HIDDEN_CHAR_STR"AP", 0);
   JsVar *key = jsvObjectGetChild(wlanObj, JS_HIDDEN_CHAR_STR"KEY", 0);
   JsVar *cb = jsvObjectGetChild(wlanObj, WLAN_ON_STATE_CHANGE, 0);
-  bool ret = jswrap_wlan_connect(wlanObj, ap, key, cb);
+  jswrap_wlan_connect(wlanObj, ap, key, cb);
   jsvUnLock(ap);
   jsvUnLock(key);
   jsvUnLock(cb);
-  return ret;
 }
 
 //uint8 wifi_station_get_connect_status();
 //bool wifi_station_scan(struct scan_config *config, scan_done_cb_t cb);
 ////void scan_done_cb_t(void *arg, STATUS status);
 //static JsVar *wifi_scan_callback;
-void on_wifi_scan_done(void *arg, STATUS status) {
+void on_wlan_scan_done(void *arg, STATUS status) {
 //	if (!wifi_scan_callback) return;
 	// call wifi_scan_callback();
 //	JsVar jsArg = jsvNewFromString("");
@@ -136,7 +133,7 @@ void on_wifi_scan_done(void *arg, STATUS status) {
 	}
 	JsVar *wlanObj = jsvObjectGetChild(execInfo.hiddenRoot, WLAN_OBJ_NAME, 0);
 	JsVar *data = jsvNewFromString("OK");
-	jsiQueueObjectCallbacks(wifi, WLAN_ON_SCAN, &data, 1);
+	jsiQueueObjectCallbacks(wlanObj, WLAN_ON_SCAN, &data, 1);
 //	jsvUnLock(wifi_scan_callback);
 //	wifi_scan_callback = 0;
 }
@@ -148,19 +145,19 @@ bool jswrap_wlan_scan(JsVar *wlanObj, JsVar *config, JsVar *callback) {
 	JsVar *showHidden = jsvObjectGetChild(config, WLAN_SCAN_SHOW_HIDDEN, 0);
 	
 	struct scan_config congig = {0};
-	if (jsvIsString(ssid)) jsvGetString(ssid, (congig.ssid = calloc(32)), 32);
-	if (jsvIsString(bssid)) jsvGetString(bssid, (congig.bssid = calloc(32)), 32);
+	if (jsvIsString(ssid)) jsvGetString(ssid, (congig.ssid = alloca(32)), 32);
+	if (jsvIsString(bssid)) jsvGetString(bssid, (congig.bssid = alloca(32)), 32);
 	if (jsvIsNumeric(channel)) congig.channel = jsvGetInteger(channel);
 	if (jsvIsNumeric(showHidden)) congig.show_hidden = jsvGetInteger(showHidden);
 	
 	if (jsvIsFunction(callback)) {
-		jsvObjectSetChild(wlanObj, WIFI_ON_SCAN, callback); // no unlock needed
+		jsvObjectSetChild(wlanObj, WLAN_ON_SCAN, callback); // no unlock needed
 	}
 	else if (!jsvIsUndefined(callback)) {
 		jsError("Expecting callback Function but got %t", callback);
 		return false;
 	}
-	return wifi_station_scan(NULL/*&config*/, on_wifi_scan_done);
+	return wifi_station_scan(NULL, on_wlan_scan_done); //&config
 }
 
 //bool wifi_station_ap_number_set(uint8 number);
